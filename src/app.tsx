@@ -6,7 +6,6 @@ import { Home, type TimeRow } from './components/Home';
 import {
   timeZones,
   defaultBaseZoneId,
-  defaultTargetZoneIds,
   type TimeZoneDef,
 } from './data/timeZones';
 import { format, parseISO, addMinutes } from 'date-fns';
@@ -65,7 +64,7 @@ app.get('/', (c) => {
       ? selectedZoneIdsFromQuery
       : suggestedZoneIds.length > 0
       ? suggestedZoneIds
-      : defaultTargetZoneIds;
+      : [];
 
   // 基準開始日時を UTC に変換
   const baseLocalStartString = `${baseDate}T${baseTime}:00`;

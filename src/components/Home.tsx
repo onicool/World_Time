@@ -46,6 +46,10 @@ export const Home: FC<HomeProps> = ({
   // 24時間ラベル（0, 3, 6, 9, 12, 15, 18, 21）
   const timeLabels = ['0', '3', '6', '9', '12', '15', '18', '21', '24'];
 
+  const selectedTimeZones = allTimeZones.filter(
+    (tz) => tz.id === baseZoneId || selectedZoneIds.includes(tz.id)
+  );
+
   return (
     <div class="space-y-6">
       {/* 基準時間指定パネル */}
@@ -227,8 +231,8 @@ export const Home: FC<HomeProps> = ({
         <h2 class="mb-4 text-base font-semibold text-gray-800">比較したいタイムゾーン</h2>
 
         {/* 選択中のタイムゾーン一覧（チェックボックス） */}
-        <div id="timezoneCheckboxes" class="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 mb-4">
-          {allTimeZones.map((tz) => {
+        <div id="timezoneCheckboxes" class="flex flex-wrap gap-2 mb-4">
+          {selectedTimeZones.map((tz) => {
             const isBase = tz.id === baseZoneId;
             const checked = isBase || selectedZoneIds.includes(tz.id);
 
@@ -479,7 +483,10 @@ export const Home: FC<HomeProps> = ({
             const startTimeInput = document.getElementById('startTimeInput');
             const endTimeInput = document.getElementById('endTimeInput');
             const additionalTimezoneSelect = document.getElementById('additionalTimezoneSelect');
-            const timezoneCheckboxes = document.querySelectorAll('.timezone-checkbox');
+            const timezoneContainer = document.getElementById('timezoneCheckboxes');
+            let timezoneCheckboxes = Array.from(
+              document.querySelectorAll('.timezone-checkbox')
+            );
             const dateInput = document.getElementById('dateInput');
             const baseZoneSelect = document.getElementById('baseZoneSelect');
             const form = document.getElementById('timeForm');
@@ -970,21 +977,60 @@ export const Home: FC<HomeProps> = ({
             // --- タイムゾーン追加セレクト ---
 
             if (additionalTimezoneSelect) {
-              additionalTimezoneSelect.addEventListener('change', function (e) {
+              additionalTimezoneSelect.addEventListener('change', async function (e) {
                 const target = e.target;
                 if (!target || !target.value) return;
 
                 const value = target.value;
                 const selector = '.timezone-checkbox[value="' + value + '"]';
-                const checkbox = document.querySelector(selector);
+                let checkbox = document.querySelector(selector);
+
+                if (!checkbox && timezoneContainer) {
+                  const selectedOption =
+                    target.options &&
+                    typeof target.selectedIndex === 'number' &&
+                    target.selectedIndex >= 0
+                      ? target.options[target.selectedIndex]
+                      : null;
+
+                  const labelText =
+                    (selectedOption && selectedOption.textContent) || value;
+
+                  const label = document.createElement('label');
+                  label.className =
+                    'flex cursor-pointer items-center gap-2 rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs hover:bg-gray-100';
+
+                  const input = document.createElement('input');
+                  input.type = 'checkbox';
+                  input.name = 'zones';
+                  input.value = value;
+                  input.checked = true;
+                  input.className = 'timezone-checkbox';
+
+                  const span = document.createElement('span');
+                  span.textContent = labelText;
+
+                  label.appendChild(input);
+                  label.appendChild(span);
+
+                  timezoneContainer.appendChild(label);
+
+                  input.addEventListener('change', function () {
+                    autoSubmit();
+                  });
+
+                  timezoneCheckboxes.push(input);
+                  checkbox = input;
+                }
 
                 if (checkbox && !checkbox.checked) {
                   checkbox.checked = true;
-                  autoSubmit();
                 }
 
                 // 選択をクリア
                 target.value = '';
+
+                await autoSubmit();
               });
             }
 
