@@ -49,11 +49,22 @@ app.get('/', (c) => {
   const baseEndTime = requestUrl.searchParams.get('endTime') || defaultEndTime;
   const baseZoneId = requestUrl.searchParams.get('baseZone') || defaultBaseZoneId;
 
+  const searchQuery =
+    requestUrl.searchParams.get('q') ||
+    requestUrl.searchParams.get('query') ||
+    requestUrl.searchParams.get('keyword');
+
   // 複数選択された zones
   const selectedZoneIdsFromQuery = requestUrl.searchParams.getAll('zones');
+  const suggestedZoneIds =
+    searchQuery && searchQuery.trim().length > 0
+      ? suggestZoneIdsFromQuery(searchQuery, timeZones)
+      : [];
   const selectedZoneIds =
     selectedZoneIdsFromQuery.length > 0
       ? selectedZoneIdsFromQuery
+      : suggestedZoneIds.length > 0
+      ? suggestedZoneIds
       : defaultTargetZoneIds;
 
   // 基準開始日時を UTC に変換
@@ -141,6 +152,21 @@ function findTimeZoneDef(
   all: TimeZoneDef[]
 ): TimeZoneDef | undefined {
   return all.find((tz) => tz.id === id);
+}
+
+// 検索ワードから候補のタイムゾーンを推定
+function suggestZoneIdsFromQuery(query: string, all: TimeZoneDef[]): string[] {
+  const normalized = query.toLowerCase();
+
+  const matchedIds = all
+    .filter((tz) =>
+      (tz.keywords ?? []).some((keyword) =>
+        normalized.includes(keyword.toLowerCase())
+      )
+    )
+    .map((tz) => tz.id);
+
+  return Array.from(new Set(matchedIds));
 }
 
 export default app;
