@@ -221,18 +221,22 @@ export const Home: FC<HomeProps> = ({
               {/* ここに startThumb / endThumb など既存のつまみ要素 */}
               <div
                 id="startThumb"
-                class="absolute w-4 h-4 rounded-full bg-white border border-blue-500 shadow"
+                class="absolute bg-white border border-blue-500 shadow rounded-md"
                 style={{
-                  top: '9px',
+                  top: '15px',
+                  height: '32px',
+                  width: '10px',
                   left: `${(startMinutes / 1440) * 100}%`,
                   transform: 'translate(-50%, 0)',
                 }}
               />
               <div
                 id="endThumb"
-                class="absolute w-4 h-4 rounded-full bg-white border border-blue-500 shadow"
+                class="absolute bg-white border border-blue-500 shadow rounded-md"
                 style={{
-                  top: '9px',
+                  top: '15px',
+                  height: '32px',
+                  width: '10px',
                   left: `${(endMinutes / 1440) * 100}%`,
                   transform: 'translate(-50%, 0)',
                 }}
@@ -469,6 +473,14 @@ export const Home: FC<HomeProps> = ({
             const form = document.getElementById('timeForm');
             const whiteMask = document.getElementById('whiteMask');
 
+            const savedScroll = sessionStorage.getItem('scrollPosition');
+            if (savedScroll !== null) {
+              requestAnimationFrame(() => {
+                window.scrollTo(0, Number(savedScroll));
+                sessionStorage.removeItem('scrollPosition');
+              });
+            }
+
             // 必要な要素がなければ何もしない
             if (
               !container ||
@@ -564,6 +576,7 @@ export const Home: FC<HomeProps> = ({
                 return;
               }
 
+              sessionStorage.setItem('scrollPosition', String(window.scrollY));
               window.location.search = '?' + newQuery;
             }
 
