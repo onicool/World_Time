@@ -268,13 +268,13 @@ export const Home: FC<HomeProps> = ({
         {/* 追加タイムゾーン選択ドロップダウン */}
         <div class="mb-4 p-3 bg-gray-50 rounded-md border border-gray-200">
           <label class="mb-2 block text-sm font-medium text-gray-700">
-            タイムゾーンを選択
+            タイムゾーンを追加
           </label>
           <select
             id="additionalTimezoneSelect"
             class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
-            <option value="">-- 選択してください --</option>
+            <option value="">-- 追加するタイムゾーンを選択してください --</option>
             {availableTimeZones.map((tz) => (
               <option key={tz.id} value={tz.id}>
                 {tz.label}
