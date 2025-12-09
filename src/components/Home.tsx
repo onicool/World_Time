@@ -482,8 +482,8 @@ export const Home: FC<HomeProps> = ({
             const rangeHighlight = document.getElementById('rangeHighlight');
             const startTimeInput = document.getElementById('startTimeInput');
             const endTimeInput = document.getElementById('endTimeInput');
-            const additionalTimezoneSelect = document.getElementById('additionalTimezoneSelect');
-            const timezoneContainer = document.getElementById('timezoneCheckboxes');
+            let additionalTimezoneSelect = document.getElementById('additionalTimezoneSelect');
+            let timezoneContainer = document.getElementById('timezoneCheckboxes');
             let timezoneCheckboxes = Array.from(
               document.querySelectorAll('.timezone-checkbox')
             );
@@ -747,6 +747,7 @@ export const Home: FC<HomeProps> = ({
 
                 if (newResults && currentResults && currentResults.parentNode) {
                   currentResults.parentNode.replaceChild(newResults, currentResults);
+                  refreshTimezoneControls(doc);
                   refreshBaseSlider();
                   baseStartReference = startMinutes;
                   baseEndReference = endMinutes;
@@ -976,14 +977,16 @@ export const Home: FC<HomeProps> = ({
 
             // --- タイムゾーン追加セレクト ---
 
-            if (additionalTimezoneSelect) {
-              additionalTimezoneSelect.addEventListener('change', async function (e) {
-                const target = e.target;
+            function attachAdditionalTimezoneListener() {
+              if (!additionalTimezoneSelect) return;
+
+              additionalTimezoneSelect.onchange = async function (e) {
+                const target = e.target as HTMLSelectElement | null;
                 if (!target || !target.value) return;
 
                 const value = target.value;
                 const selector = '.timezone-checkbox[value="' + value + '"]';
-                let checkbox = document.querySelector(selector);
+                let checkbox = document.querySelector(selector) as HTMLInputElement | null;
 
                 if (!checkbox && timezoneContainer) {
                   const selectedOption =
@@ -1031,18 +1034,23 @@ export const Home: FC<HomeProps> = ({
                 target.value = '';
 
                 await autoSubmit();
-              });
+              };
             }
 
             // --- タイムゾーンのチェックボックス変更で自動送信 ---
 
-            if (timezoneCheckboxes && timezoneCheckboxes.forEach) {
-              timezoneCheckboxes.forEach(function (cb) {
-                cb.addEventListener('change', function () {
-                  autoSubmit();
+            function attachTimezoneCheckboxListeners() {
+              if (timezoneCheckboxes && timezoneCheckboxes.forEach) {
+                timezoneCheckboxes.forEach(function (cb) {
+                  cb.onchange = function () {
+                    autoSubmit();
+                  };
                 });
-              });
+              }
             }
+
+            attachAdditionalTimezoneListener();
+            attachTimezoneCheckboxListeners();
 
             // --- 日付・基準タイムゾーンの変更で自動送信 ---
 
@@ -1061,6 +1069,38 @@ export const Home: FC<HomeProps> = ({
                 }
                 autoSubmit();
               });
+            }
+
+            function refreshTimezoneControls(doc) {
+              const newContainer = doc.getElementById('timezoneCheckboxes');
+              const currentContainer = document.getElementById('timezoneCheckboxes');
+
+              if (newContainer && currentContainer && currentContainer.parentNode) {
+                currentContainer.parentNode.replaceChild(newContainer, currentContainer);
+                timezoneContainer = newContainer;
+              }
+
+              const newAdditionalSelect = doc.getElementById('additionalTimezoneSelect');
+              const currentAdditionalSelect = document.getElementById('additionalTimezoneSelect');
+
+              if (
+                newAdditionalSelect &&
+                currentAdditionalSelect &&
+                currentAdditionalSelect.parentNode
+              ) {
+                currentAdditionalSelect.parentNode.replaceChild(
+                  newAdditionalSelect,
+                  currentAdditionalSelect
+                );
+                additionalTimezoneSelect = newAdditionalSelect as HTMLSelectElement;
+              }
+
+              timezoneCheckboxes = Array.from(
+                document.querySelectorAll('.timezone-checkbox')
+              );
+
+              attachAdditionalTimezoneListener();
+              attachTimezoneCheckboxListeners();
             }
 
             // 初期表示：UI だけ整える（送信はしない）
