@@ -141,6 +141,7 @@ app.get('/', (c) => {
       baseZoneId={baseZoneId}
       allTimeZones={timeZones}
       selectedZoneIds={selectedZoneIds}
+      primaryZoneIds={defaultTargetZoneIds}
       rows={rows}
     />
   );

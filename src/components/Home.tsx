@@ -20,6 +20,7 @@ type HomeProps = {
   baseZoneId: string;
   allTimeZones: TimeZoneDef[];
   selectedZoneIds: string[];
+  primaryZoneIds: string[];
   rows: TimeRow[];
 };
 
@@ -68,10 +69,22 @@ export const Home: FC<HomeProps> = ({
   baseZoneId,
   allTimeZones,
   selectedZoneIds,
+  primaryZoneIds,
   rows,
 }) => {
   const startMinutes = timeToMinutes(baseTime);
   const endMinutes = timeToMinutes(baseEndTime);
+
+  const primaryZoneSet = new Set(primaryZoneIds);
+  const visibleZoneIds = new Set<string>([
+    baseZoneId,
+    ...primaryZoneIds,
+    ...selectedZoneIds,
+  ]);
+
+  const sortedTimeZones = [...allTimeZones].sort((a, b) =>
+    (a.sortKey || a.label).localeCompare(b.sortKey || b.label, 'ja')
+  );
 
   // 24時間ラベル（0, 3, 6, 9, 12, 15, 18, 21）
   const timeLabels = ['0', '3', '6', '9', '12', '15', '18', '21', '24'];
@@ -92,7 +105,7 @@ export const Home: FC<HomeProps> = ({
                 value={baseZoneId}
                 class="w-full rounded-lg border border-gray-300 px-3 py-3 text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               >
-                {allTimeZones.map((tz) => (
+                {sortedTimeZones.map((tz) => (
                   <option key={tz.id} value={tz.id}>
                     {tz.label}
                   </option>
@@ -257,14 +270,20 @@ export const Home: FC<HomeProps> = ({
 
         {/* 選択中のタイムゾーン一覧（チェックボックス） */}
         <div id="timezoneCheckboxes" class="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 mb-4">
-          {allTimeZones.map((tz) => {
+          {sortedTimeZones.map((tz) => {
             const checked =
               tz.id === baseZoneId || selectedZoneIds.includes(tz.id);
+            const isVisible = visibleZoneIds.has(tz.id);
+            const isPrimary = primaryZoneSet.has(tz.id);
 
             return (
               <label
                 key={tz.id}
-                class="flex cursor-pointer items-center gap-2 rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs hover:bg-gray-100"
+                class={`flex cursor-pointer items-center gap-2 rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs hover:bg-gray-100${
+                  isVisible ? '' : ' hidden'
+                }`}
+                aria-hidden={isVisible ? undefined : 'true'}
+                data-primary={isPrimary}
               >
                 <input
                   type="checkbox"
@@ -289,7 +308,7 @@ export const Home: FC<HomeProps> = ({
             class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             <option value="">-- 選択してください --</option>
-            {allTimeZones.map((tz) => (
+            {sortedTimeZones.map((tz) => (
               <option key={tz.id} value={tz.id}>
                 {tz.label}
               </option>
