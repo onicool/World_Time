@@ -78,46 +78,31 @@ export const Home: FC<HomeProps> = ({
 
   return (
     <div class="space-y-6">
-      {/* 説明 */}
-      <section class="rounded-xl bg-white p-4 shadow-sm">
-        <h1 class="mb-2 text-lg font-semibold">
-          海外メンバーとのミーティング時間を一瞬で確認
-        </h1>
-        <p class="text-sm text-gray-600">
-          日本時間（または任意のタイムゾーン）を基準に、世界の主要都市の現地時刻をまとめて確認できます。
-          スライダーで時間範囲を調整すると、各タイムゾーンでの対応時刻が自動的に更新されます。
-        </p>
-      </section>
-
       {/* 基準時間指定パネル */}
-      <section class="rounded-xl bg-white p-4 shadow-sm">
-        <h2 class="mb-4 text-base font-semibold text-gray-800">基準時間指定</h2>
+      <section class="rounded-2xl bg-white p-6 shadow-sm">
+        <h2 class="mb-6 text-lg font-semibold text-gray-800">基準時間指定</h2>
         <form method="get" class="space-y-6" id="timeForm">
-          <div class="grid gap-4 md:grid-cols-2">
+          <div class="grid gap-4 lg:grid-cols-3">
             {/* 基準日 */}
-            <div>
-              <label class="mb-1 block text-sm font-medium text-gray-700">
-                基準日
-              </label>
+            <div class="lg:col-span-1">
+              <label class="mb-2 block text-sm font-medium text-gray-700">基準日</label>
               <input
                 type="date"
                 name="date"
                 id="dateInput"
                 value={baseDate}
-                class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                class="w-full rounded-lg border border-gray-300 px-3 py-3 text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
 
             {/* 基準タイムゾーン */}
-            <div>
-              <label class="mb-1 block text-sm font-medium text-gray-700">
-                基準タイムゾーン
-              </label>
+            <div class="lg:col-span-1">
+              <label class="mb-2 block text-sm font-medium text-gray-700">基準タイムゾーン</label>
               <select
                 name="baseZone"
                 id="baseZoneSelect"
                 value={baseZoneId}
-                class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                class="w-full rounded-lg border border-gray-300 px-3 py-3 text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               >
                 {allTimeZones.map((tz) => (
                   <option key={tz.id} value={tz.id}>
@@ -126,34 +111,72 @@ export const Home: FC<HomeProps> = ({
                 ))}
               </select>
             </div>
+
+            {/* 時刻入力 */}
+            <div class="lg:col-span-1">
+              <div class="flex items-center justify-between mb-2">
+                <label class="block text-sm font-medium text-gray-700">時刻範囲</label>
+                <div class="flex items-center gap-2 text-base font-semibold">
+                  <button
+                    type="button"
+                    id="startTimeDisplay"
+                    class="rounded-lg bg-blue-50 px-3 py-1 font-mono text-blue-700 shadow-inner focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    {baseTime}
+                  </button>
+                  <span class="text-gray-400">〜</span>
+                  <button
+                    type="button"
+                    id="endTimeDisplay"
+                    class="rounded-lg bg-blue-50 px-3 py-1 font-mono text-blue-700 shadow-inner focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    {baseEndTime}
+                  </button>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <label class="flex flex-col gap-1 text-xs font-medium text-gray-600">
+                  <span>開始</span>
+                  <input
+                    type="time"
+                    step="60"
+                    min="00:00"
+                    max="23:59"
+                    id="startTimeInput"
+                    name="time"
+                    value={baseTime}
+                    class="w-full rounded-lg border border-blue-200 bg-blue-50 px-3 py-3 text-2xl font-semibold tracking-tight text-blue-800 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </label>
+                <label class="flex flex-col gap-1 text-xs font-medium text-gray-600">
+                  <span>終了</span>
+                  <input
+                    type="time"
+                    step="60"
+                    min="00:00"
+                    max="23:59"
+                    id="endTimeInput"
+                    name="endTime"
+                    value={baseEndTime}
+                    class="w-full rounded-lg border border-blue-200 bg-blue-50 px-3 py-3 text-2xl font-semibold tracking-tight text-blue-800 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </label>
+              </div>
+            </div>
           </div>
 
           {/* 時刻範囲スライダー */}
           <div>
             <div class="mb-3 flex items-center justify-between">
-              <label class="block text-sm font-medium text-gray-700">
-                時刻範囲
-              </label>
-              <div class="text-lg font-semibold">
-                <span id="startTimeDisplay" class="font-mono text-blue-600">{baseTime}</span>
+              <div class="flex items-center gap-2 text-sm text-gray-700">
+                <span>スライダーで範囲を調整（5分単位）</span>
+              </div>
+              <div class="hidden text-lg font-semibold sm:block">
+                <span id="startTimeSummary" class="font-mono text-blue-600">{baseTime}</span>
                 <span class="mx-2 text-gray-400">〜</span>
-                <span id="endTimeDisplay" class="font-mono text-blue-600">{baseEndTime}</span>
+                <span id="endTimeSummary" class="font-mono text-blue-600">{baseEndTime}</span>
               </div>
             </div>
-
-            {/* クエリ送信用の隠しフィールド */}
-            <input
-              type="hidden"
-              id="startTimeInput"
-              name="time"
-              value={baseTime}
-            />
-            <input
-              type="hidden"
-              id="endTimeInput"
-              name="endTime"
-              value={baseEndTime}
-            />
 
             {/* カスタムスライダーコンテナ */}
             <div
@@ -342,23 +365,21 @@ export const Home: FC<HomeProps> = ({
                 key={row.zoneId}
                 class="rounded-lg p-4 border border-gray-200 bg-white"
               >
-                <div class="flex items-center justify-between mb-2">
-                  <div class="flex items-center">
-                    <span class="font-semibold text-lg text-gray-900">{row.label}</span>
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-3 text-sm text-gray-700">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="rounded-full bg-gray-100 px-3 py-1 text-sm font-semibold text-gray-900">
+                      {row.label}
+                    </span>
+                    <span class="text-xs text-gray-500">{row.zoneId}</span>
                     {baseBadge}
                   </div>
-                  <div class="text-right">
-                    <div class="text-xl font-bold text-gray-900 font-mono">
-                      {row.localTime} 〜 {row.localEndTime}
-                    </div>
-                    <div class="text-sm text-gray-600">
-                      {row.localDate} ({dayDiffLabel})
-                    </div>
+                  <div class="flex flex-wrap items-center gap-2 text-base font-semibold text-gray-900">
+                    <span class="font-mono">{row.localTime}</span>
+                    <span class="text-gray-400">〜</span>
+                    <span class="font-mono">{row.localEndTime}</span>
+                    <span class="text-xs font-medium text-gray-500">{row.localDate}</span>
+                    <span class="rounded bg-gray-100 px-2 py-0.5 text-[11px] font-semibold text-gray-700">{dayDiffLabel}</span>
                   </div>
-                </div>
-
-                <div class="text-xs text-gray-500 mb-3">
-                  {row.zoneId}
                 </div>
 
                 {/* タイムゾーンごとのスライダー（表示のみ） */}
@@ -464,6 +485,8 @@ export const Home: FC<HomeProps> = ({
             const endTimeInput = document.getElementById('endTimeInput');
             const startTimeDisplay = document.getElementById('startTimeDisplay');
             const endTimeDisplay = document.getElementById('endTimeDisplay');
+            const startTimeSummary = document.getElementById('startTimeSummary');
+            const endTimeSummary = document.getElementById('endTimeSummary');
             const addTimezoneBtn = document.getElementById('addTimezoneBtn');
             const addTimezonePanel = document.getElementById('addTimezonePanel');
             const additionalTimezoneSelect = document.getElementById('additionalTimezoneSelect');
@@ -472,6 +495,8 @@ export const Home: FC<HomeProps> = ({
             const baseZoneSelect = document.getElementById('baseZoneSelect');
             const form = document.getElementById('timeForm');
             const whiteMask = document.getElementById('whiteMask');
+
+            const MAX_MINUTES = 1439;
 
             const savedScroll = sessionStorage.getItem('scrollPosition');
             if (savedScroll !== null) {
@@ -559,13 +584,12 @@ export const Home: FC<HomeProps> = ({
               endTimeInput.value = endTime;
               startTimeDisplay.textContent = startTime;
               endTimeDisplay.textContent = endTime;
+              if (startTimeSummary) startTimeSummary.textContent = startTime;
+              if (endTimeSummary) endTimeSummary.textContent = endTime;
             }
 
-            function autoSubmit() {
+            async function autoSubmit() {
               const formData = new FormData(form);
-
-              // FormData にはチェックされている timezone-checkbox だけが入るので
-              // 特別な削除処理は不要
 
               const params = new URLSearchParams(formData);
               const newQuery = params.toString();
@@ -576,8 +600,33 @@ export const Home: FC<HomeProps> = ({
                 return;
               }
 
+              const url = '?' + newQuery;
               sessionStorage.setItem('scrollPosition', String(window.scrollY));
-              window.location.search = '?' + newQuery;
+
+              try {
+                const response = await fetch(url, {
+                  headers: { 'X-Requested-With': 'fetch' },
+                });
+
+                if (!response.ok) {
+                  throw new Error('Failed to update');
+                }
+
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+
+                const newResults = doc.getElementById('resultsContainer');
+                const currentResults = document.getElementById('resultsContainer');
+
+                if (newResults && currentResults && currentResults.parentNode) {
+                  currentResults.parentNode.replaceChild(newResults, currentResults);
+                }
+
+                history.replaceState(null, '', url);
+              } catch (error) {
+                window.location.search = url;
+              }
             }
 
             function getMinutesFromEvent(e) {
@@ -589,9 +638,9 @@ export const Home: FC<HomeProps> = ({
 
               const x = clientX - rect.left;
               const percent = Math.max(0, Math.min(1, x / rect.width));
-              // 15分単位に丸める
-              const minutes = Math.round((percent * 1440) / 15) * 15;
-              return Math.max(0, Math.min(1440, minutes));
+              // 5分単位に丸める
+              const minutes = Math.round((percent * 1440) / 5) * 5;
+              return Math.max(0, Math.min(MAX_MINUTES, minutes));
             }
 
             function handleStart(e, mode) {
@@ -628,8 +677,8 @@ export const Home: FC<HomeProps> = ({
 
                 // スライダー全幅 = 1440分に対応
                 let deltaMinutes = (dx / rect.width) * 1440;
-                // 15分単位に丸める
-                deltaMinutes = Math.round(deltaMinutes / 15) * 15;
+                // 5分単位に丸める
+                deltaMinutes = Math.round(deltaMinutes / 5) * 5;
 
                 const originalRange =
                   rangeEndMinutesAtDragStart - rangeStartMinutesAtDragStart;
@@ -637,13 +686,13 @@ export const Home: FC<HomeProps> = ({
                 let newStart = rangeStartMinutesAtDragStart + deltaMinutes;
                 let newEnd = rangeEndMinutesAtDragStart + deltaMinutes;
 
-                // 0〜1440 の範囲に収める（間隔は維持）
+                // 0〜MAX_MINUTES の範囲に収める（間隔は維持）
                 if (newStart < 0) {
                   newStart = 0;
                   newEnd = originalRange;
-                } else if (newEnd > 1440) {
-                  newEnd = 1440;
-                  newStart = 1440 - originalRange;
+                } else if (newEnd > MAX_MINUTES) {
+                  newEnd = MAX_MINUTES;
+                  newStart = MAX_MINUTES - originalRange;
                 }
 
                 startMinutes = newStart;
@@ -757,6 +806,24 @@ export const Home: FC<HomeProps> = ({
               }
             });
 
+            if (startTimeDisplay) {
+              startTimeDisplay.addEventListener('click', function () {
+                if (startTimeInput && startTimeInput.focus) {
+                  startTimeInput.focus();
+                  if (startTimeInput.select) startTimeInput.select();
+                }
+              });
+            }
+
+            if (endTimeDisplay) {
+              endTimeDisplay.addEventListener('click', function () {
+                if (endTimeInput && endTimeInput.focus) {
+                  endTimeInput.focus();
+                  if (endTimeInput.select) endTimeInput.select();
+                }
+              });
+            }
+
             // --- タイムゾーン追加ボタンのトグル ---
 
             if (addTimezoneBtn && addTimezonePanel) {
@@ -806,6 +873,11 @@ export const Home: FC<HomeProps> = ({
 
             if (baseZoneSelect) {
               baseZoneSelect.addEventListener('change', function () {
+                const selector = '.timezone-checkbox[value="' + baseZoneSelect.value + '"]';
+                const checkbox = document.querySelector(selector);
+                if (checkbox) {
+                  checkbox.checked = true;
+                }
                 autoSubmit();
               });
             }
