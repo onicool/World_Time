@@ -67,7 +67,11 @@ export const Home: FC<HomeProps> = ({
                 class="w-full h-12 rounded-lg border border-gray-300 px-3 text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               >
                 {allTimeZones.map((tz) => (
-                  <option key={tz.id} value={tz.id}>
+                  <option
+                    key={tz.id}
+                    value={tz.id}
+                    selected={tz.id === baseZoneId}
+                  >
                     {tz.label}
                   </option>
                 ))}
