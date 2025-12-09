@@ -232,7 +232,7 @@ export const Home: FC<HomeProps> = ({
 
       {/* 比較したいタイムゾーンパネル */}
       <section class="rounded-xl bg-white p-4 shadow-sm">
-        <h2 class="mb-4 text-base font-semibold text-gray-800">比較したいタイムゾーン</h2>
+        <h2 class="mb-4 text-base font-semibold text-gray-800">確認したいタイムゾーン</h2>
 
         {/* 選択中のタイムゾーン一覧（チェックボックス） */}
         <div id="timezoneCheckboxes" class="flex flex-wrap gap-2 mb-4">
