@@ -19,6 +19,7 @@ type HomeProps = {
   baseEndTime: string;
   baseZoneId: string;
   allTimeZones: TimeZoneDef[];
+  availableTimeZones: TimeZoneDef[];
   selectedZoneIds: string[];
   rows: TimeRow[];
 };
@@ -35,6 +36,7 @@ export const Home: FC<HomeProps> = ({
   baseEndTime,
   baseZoneId,
   allTimeZones,
+  availableTimeZones,
   selectedZoneIds,
   rows,
 }) => {
@@ -265,7 +267,7 @@ export const Home: FC<HomeProps> = ({
             class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             <option value="">-- 選択してください --</option>
-            {allTimeZones.map((tz) => (
+            {availableTimeZones.map((tz) => (
               <option key={tz.id} value={tz.id}>
                 {tz.label}
               </option>
