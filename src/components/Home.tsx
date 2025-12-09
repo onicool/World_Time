@@ -23,42 +23,10 @@ type HomeProps = {
   rows: TimeRow[];
 };
 
-type PercentageSegment = {
-  start: number;
-  end: number;
-};
-
-// 時刻（HH:mm）から時間の数値（0-24）を取得
-function timeToHours(time: string): number {
-  const [hours, minutes] = time.split(':').map(Number);
-  return hours + minutes / 60;
-}
-
 // 時刻（HH:mm）から分単位（0-1440）を取得
 function timeToMinutes(time: string): number {
   const [hours, minutes] = time.split(':').map(Number);
   return hours * 60 + minutes;
-}
-
-function buildNonSelectedSegments(segments: PercentageSegment[]): PercentageSegment[] {
-  const sorted = [...segments].sort((a, b) => a.start - b.start);
-  const result: PercentageSegment[] = [];
-
-  let cursor = 0;
-
-  for (const segment of sorted) {
-    if (segment.start > cursor) {
-      result.push({ start: cursor, end: segment.start });
-    }
-
-    cursor = Math.max(cursor, segment.end);
-  }
-
-  if (cursor < 100) {
-    result.push({ start: cursor, end: 100 });
-  }
-
-  return result;
 }
 
 export const Home: FC<HomeProps> = ({
@@ -258,8 +226,8 @@ export const Home: FC<HomeProps> = ({
         {/* 選択中のタイムゾーン一覧（チェックボックス） */}
         <div id="timezoneCheckboxes" class="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 mb-4">
           {allTimeZones.map((tz) => {
-            const checked =
-              tz.id === baseZoneId || selectedZoneIds.includes(tz.id);
+            const isBase = tz.id === baseZoneId;
+            const checked = isBase || selectedZoneIds.includes(tz.id);
 
             return (
               <label
@@ -271,9 +239,16 @@ export const Home: FC<HomeProps> = ({
                   name="zones"
                   value={tz.id}
                   checked={checked}
-                  class="timezone-checkbox"
+                  disabled={isBase}
+                  aria-disabled={isBase}
+                  class="timezone-checkbox disabled:cursor-not-allowed"
                 />
                 <span>{tz.label}</span>
+                {isBase ? (
+                  <span class="rounded bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-700">
+                    基準として選択中
+                  </span>
+                ) : null}
               </label>
             );
           })}
@@ -329,6 +304,11 @@ export const Home: FC<HomeProps> = ({
               <div
                 key={row.zoneId}
                 class="rounded-lg p-4 border border-gray-200 bg-white"
+                data-row-id={row.zoneId}
+                data-start-minutes={rowStartMinutes}
+                data-end-minutes={rowEndMinutes}
+                data-day-diff={row.dayDiff}
+                data-local-date={row.localDate}
               >
                 <div class="flex flex-wrap items-center justify-between gap-3 mb-3 text-sm text-gray-700">
                   <div class="flex flex-wrap items-center gap-2">
@@ -339,11 +319,11 @@ export const Home: FC<HomeProps> = ({
                     {baseBadge}
                   </div>
                   <div class="flex flex-wrap items-center gap-2 text-base font-semibold text-gray-900">
-                    <span class="font-mono">{row.localTime}</span>
+                    <span class="font-mono row-start-time">{row.localTime}</span>
                     <span class="text-gray-400">〜</span>
-                    <span class="font-mono">{row.localEndTime}</span>
-                    <span class="text-xs font-medium text-gray-500">{row.localDate}</span>
-                    <span class="rounded bg-gray-100 px-2 py-0.5 text-[11px] font-semibold text-gray-700">{dayDiffLabel}</span>
+                    <span class="font-mono row-end-time">{row.localEndTime}</span>
+                    <span class="text-xs font-medium text-gray-500 row-date">{row.localDate}</span>
+                    <span class="rounded bg-gray-100 px-2 py-0.5 text-[11px] font-semibold text-gray-700 row-day-diff">{dayDiffLabel}</span>
                   </div>
                 </div>
 
@@ -381,7 +361,7 @@ export const Home: FC<HomeProps> = ({
 
                       <div
                         id="resultWhiteMask"
-                        class="absolute inset-0 bg-white pointer-events-none"
+                        class="absolute inset-0 bg-white pointer-events-none result-mask"
                       />
 
                       {[0, 3, 6, 9, 12, 15, 18, 21].map((hour) => (
@@ -429,81 +409,46 @@ export const Home: FC<HomeProps> = ({
                     />
                   </div>
                 ) : (
-                  (() => {
-                    const rowStartMinutes = timeToMinutes(row.localTime);
-                    const rowEndMinutes = timeToMinutes(row.localEndTime);
-                    const isOverMidnight = rowStartMinutes > rowEndMinutes;
+                  <div class="relative" style="height: 45px;">
+                    {/* ベースバー（グラデーション固定） */}
+                    <div
+                      class="absolute left-0 right-0 rounded border border-gray-300 overflow-hidden"
+                      style={{
+                        top: '0',
+                        height: '32px',
+                      }}
+                    >
+                      {/* グラデーションレイヤー */}
+                      <div
+                        class="absolute inset-0"
+                        style={{
+                          background:
+                            'linear-gradient(to right,\
+                              #3b5998 0%,\
+                              #4a6ba8 12.5%,\
+                              #5a7db8 25%,\
+                              #a8c8e0 37.5%,\
+                              #e8f0f8 50%,\
+                              #f0d8b8 62.5%,\
+                              #d8b090 75%,\
+                              #8090a0 87.5%,\
+                              #3b5998 100%\
+                            )',
+                        }}
+                      />
 
-                    const rowStartPercent = (rowStartMinutes / 1440) * 100;
-                    const rowEndPercent = (rowEndMinutes / 1440) * 100;
+                      <div class="absolute inset-0 bg-white pointer-events-none result-mask" />
 
-                    const selectedSegments: PercentageSegment[] = isOverMidnight
-                      ? [
-                          { start: rowStartPercent, end: 100 },
-                          { start: 0, end: rowEndPercent },
-                        ]
-                      : [{ start: rowStartPercent, end: rowEndPercent }];
-
-                    const nonSelectedSegments = buildNonSelectedSegments(
-                      selectedSegments,
-                    );
-
-                    return (
-                      <div class="relative" style="height: 45px;">
-                        {/* ベースバー（グラデーション固定） */}
+                      {/* グリッド線（3時間刻み） */}
+                      {[0, 3, 6, 9, 12, 15, 18, 21].map((hour) => (
                         <div
-                          class="absolute left-0 right-0 rounded border border-gray-300 overflow-hidden"
-                          style={{
-                            top: '0',
-                            height: '32px',
-                          }}
-                        >
-                          {/* グラデーションレイヤー */}
-                          <div
-                            class="absolute inset-0"
-                            style={{
-                              background:
-                                'linear-gradient(to right,\
-                                  #3b5998 0%,\
-                                  #4a6ba8 12.5%,\
-                                  #5a7db8 25%,\
-                                  #a8c8e0 37.5%,\
-                                  #e8f0f8 50%,\
-                                  #f0d8b8 62.5%,\
-                                  #d8b090 75%,\
-                                  #8090a0 87.5%,\
-                                  #3b5998 100%\
-                                )',
-                            }}
-                          />
-
-                          {/* 非選択範囲を白で覆う */}
-                          {nonSelectedSegments.map((segment, index) => (
-                            <div
-                              key={index}
-                              class="absolute bg-white"
-                              style={{
-                                top: '0',
-                                height: '32px',
-                                left: `${segment.start}%`,
-                                width: `${segment.end - segment.start}%`,
-                                zIndex: 2,
-                              }}
-                            />
-                          ))}
-
-                          {/* グリッド線（3時間刻み） */}
-                          {[0, 3, 6, 9, 12, 15, 18, 21].map((hour) => (
-                            <div
-                              key={hour}
-                              class="absolute top-0 bottom-0 w-px bg-gray-300"
-                              style={{ left: `${(hour / 24) * 100}%`, zIndex: 3 }}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })()
+                          key={hour}
+                          class="absolute top-0 bottom-0 w-px bg-gray-300"
+                          style={{ left: `${(hour / 24) * 100}%`, zIndex: 3 }}
+                        />
+                      ))}
+                    </div>
+                  </div>
                 )}
 
 
@@ -572,6 +517,9 @@ export const Home: FC<HomeProps> = ({
             let startMinutes = ${startMinutes};
             let endMinutes = ${endMinutes};
 
+            let baseStartReference = startMinutes;
+            let baseEndReference = endMinutes;
+
             let isDragging = false;
             // 'start' | 'end' | 'range'
             let dragMode = null;
@@ -579,6 +527,38 @@ export const Home: FC<HomeProps> = ({
             let rangeDragStartX = 0;
             let rangeStartMinutesAtDragStart = 0;
             let rangeEndMinutesAtDragStart = 0;
+
+            function getResultRowStates() {
+              const rows = Array.from(
+                document.querySelectorAll('[data-row-id]')
+              );
+
+              return rows.map((row) => {
+                const baseStart = Number(row.dataset.startMinutes || '0');
+                const baseEnd = Number(row.dataset.endMinutes || '0');
+                const baseDayDiff = Number(row.dataset.dayDiff || '0');
+                const baseLocalDate = row.dataset.localDate || '';
+
+                const endDayDiff =
+                  baseEnd < baseStart ? baseDayDiff + 1 : baseDayDiff;
+
+                return {
+                  element: row,
+                  mask: row.querySelector('.result-mask'),
+                  startTimeEl: row.querySelector('.row-start-time'),
+                  endTimeEl: row.querySelector('.row-end-time'),
+                  dateEl: row.querySelector('.row-date'),
+                  dayDiffEl: row.querySelector('.row-day-diff'),
+                  startOffset:
+                    baseStart + baseDayDiff * 1440 - baseStartReference,
+                  endOffset: baseEnd + endDayDiff * 1440 - baseEndReference,
+                  baseDayDiff,
+                  baseLocalDate,
+                };
+              });
+            }
+
+            let resultRowStates = getResultRowStates();
 
             function minutesToTime(minutes) {
               const hours = Math.floor(minutes / 60);
@@ -589,20 +569,100 @@ export const Home: FC<HomeProps> = ({
             // 白いマスクに「選択範囲だけ穴を開ける」ための mask-image を設定
             function updateWhiteMask(maskElement, startPercent, endPercent) {
               if (!maskElement) return;
-              // startPercent, endPercent は 0〜100 の範囲
-              // 未選択部分（0〜start, end〜100）は黒＝白が見える
-              // 選択部分（start〜end）は透明＝穴が開いて下のグラデーションが見える
-              const mask =
-                'linear-gradient(to right,' +
-                'black 0%,' +
-                'black ' + startPercent + '%,' +
-                'transparent ' + startPercent + '%,' +
-                'transparent ' + endPercent + '%,' +
-                'black ' + endPercent + '%,' +
-                'black 100%)';
+
+              const start = Math.max(0, Math.min(100, startPercent));
+              const end = Math.max(0, Math.min(100, endPercent));
+
+              let mask;
+
+              if (start <= end) {
+                mask =
+                  'linear-gradient(to right,' +
+                  'black 0%,' +
+                  'black ' + start + '%,' +
+                  'transparent ' + start + '%,' +
+                  'transparent ' + end + '%,' +
+                  'black ' + end + '%,' +
+                  'black 100%)';
+              } else {
+                mask =
+                  'linear-gradient(to right,' +
+                  'transparent 0%,' +
+                  'transparent ' + end + '%,' +
+                  'black ' + end + '%,' +
+                  'black ' + start + '%,' +
+                  'transparent ' + start + '%,' +
+                  'transparent 100%)';
+              }
 
               maskElement.style.webkitMaskImage = mask;
               maskElement.style.maskImage = mask;
+            }
+
+            function normalizeMinutes(totalMinutes) {
+              const minutes = ((totalMinutes % 1440) + 1440) % 1440;
+              const dayOffset = Math.floor(totalMinutes / 1440);
+
+              return { minutes, dayOffset };
+            }
+
+            function formatDate(date) {
+              const yyyy = date.getFullYear();
+              const mm = String(date.getMonth() + 1).padStart(2, '0');
+              const dd = String(date.getDate()).padStart(2, '0');
+
+              return `${yyyy}-${mm}-${dd}`;
+            }
+
+            function formatDayDiffLabel(dayDiff) {
+              if (dayDiff === 0) return '同日';
+              if (dayDiff === 1) return '翌日';
+              if (dayDiff === -1) return '前日';
+              return dayDiff > 1 ? `+${dayDiff}日` : `${dayDiff}日`;
+            }
+
+            function updateResultRows() {
+              resultRowStates.forEach((rowState) => {
+                const startTotal = startMinutes + rowState.startOffset;
+                const endTotal = endMinutes + rowState.endOffset;
+
+                const startInfo = normalizeMinutes(startTotal);
+                const endInfo = normalizeMinutes(endTotal);
+
+                const startPercent = (startInfo.minutes / 1440) * 100;
+                const endPercent = (endInfo.minutes / 1440) * 100;
+
+                if (rowState.mask) {
+                  updateWhiteMask(rowState.mask, startPercent, endPercent);
+                }
+
+                const startTimeLabel = minutesToTime(startInfo.minutes);
+                const endTimeLabel = minutesToTime(endInfo.minutes);
+
+                if (rowState.startTimeEl) {
+                  rowState.startTimeEl.textContent = startTimeLabel;
+                }
+
+                if (rowState.endTimeEl) {
+                  rowState.endTimeEl.textContent = endTimeLabel;
+                }
+
+                const currentDayDiff = rowState.baseDayDiff + startInfo.dayOffset;
+
+                if (rowState.dayDiffEl) {
+                  rowState.dayDiffEl.textContent = formatDayDiffLabel(
+                    currentDayDiff
+                  );
+                }
+
+                if (rowState.dateEl && rowState.baseLocalDate) {
+                  const date = new Date(rowState.baseLocalDate + 'T00:00:00');
+                  if (!Number.isNaN(date.getTime())) {
+                    date.setDate(date.getDate() + startInfo.dayOffset);
+                    rowState.dateEl.textContent = formatDate(date);
+                  }
+                }
+              });
             }
 
             function updateDisplay() {
@@ -632,6 +692,8 @@ export const Home: FC<HomeProps> = ({
 
               startTimeInput.value = startTime;
               endTimeInput.value = endTime;
+
+              updateResultRows();
             }
 
             async function autoSubmit() {
@@ -676,6 +738,9 @@ export const Home: FC<HomeProps> = ({
                 if (newResults && currentResults && currentResults.parentNode) {
                   currentResults.parentNode.replaceChild(newResults, currentResults);
                   refreshBaseSlider();
+                  baseStartReference = startMinutes;
+                  baseEndReference = endMinutes;
+                  resultRowStates = getResultRowStates();
                   updateDisplay();
                 }
 
