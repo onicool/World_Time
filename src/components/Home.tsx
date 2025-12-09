@@ -612,14 +612,14 @@ export const Home: FC<HomeProps> = ({
               const mm = String(date.getMonth() + 1).padStart(2, '0');
               const dd = String(date.getDate()).padStart(2, '0');
 
-              return `${yyyy}-${mm}-${dd}`;
+              return yyyy + '-' + mm + '-' + dd;
             }
 
             function formatDayDiffLabel(dayDiff) {
               if (dayDiff === 0) return '同日';
               if (dayDiff === 1) return '翌日';
               if (dayDiff === -1) return '前日';
-              return dayDiff > 1 ? `+${dayDiff}日` : `${dayDiff}日`;
+              return dayDiff > 1 ? '+' + dayDiff + '日' : dayDiff + '日';
             }
 
             function updateResultRows() {
