@@ -58,7 +58,7 @@ export const Home: FC<HomeProps> = ({
                 name="baseZone"
                 id="baseZoneSelect"
                 value={baseZoneId}
-                class="w-full rounded-lg border border-gray-300 px-3 py-3 text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                class="w-full h-12 rounded-lg border border-gray-300 px-3 text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               >
                 {allTimeZones.map((tz) => (
                   <option key={tz.id} value={tz.id}>
@@ -76,16 +76,16 @@ export const Home: FC<HomeProps> = ({
                 name="date"
                 id="dateInput"
                 value={baseDate}
-                class="w-full rounded-lg border border-gray-300 px-3 py-3 text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                class="w-full h-12 rounded-lg border border-gray-300 px-3 text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
 
             {/* 時刻入力 */}
             <div class="lg:col-span-1">
               <label class="mb-2 block text-sm font-medium text-gray-700">時刻範囲</label>
-              <div class="grid grid-cols-2 gap-3">
-                <label class="flex flex-col gap-1 text-xs font-medium text-gray-600">
-                  <span>開始</span>
+              <div class="flex flex-wrap items-center gap-3">
+                <label class="flex items-center gap-2 text-xs font-medium text-gray-600">
+                  <span class="whitespace-nowrap">開始</span>
                   <input
                     type="time"
                     step="60"
@@ -94,11 +94,12 @@ export const Home: FC<HomeProps> = ({
                     id="startTimeInput"
                     name="time"
                     value={baseTime}
-                    class="w-full rounded-lg border border-blue-200 bg-blue-50 px-3 py-3 text-2xl font-semibold tracking-tight text-blue-800 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    class="h-12 w-24 rounded-lg border border-blue-200 bg-blue-50 px-3 text-base font-semibold tracking-tight text-blue-800 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </label>
-                <label class="flex flex-col gap-1 text-xs font-medium text-gray-600">
-                  <span>終了</span>
+                <span class="text-gray-400">〜</span>
+                <label class="flex items-center gap-2 text-xs font-medium text-gray-600">
+                  <span class="whitespace-nowrap">終了</span>
                   <input
                     type="time"
                     step="60"
@@ -107,7 +108,7 @@ export const Home: FC<HomeProps> = ({
                     id="endTimeInput"
                     name="endTime"
                     value={baseEndTime}
-                    class="w-full rounded-lg border border-blue-200 bg-blue-50 px-3 py-3 text-2xl font-semibold tracking-tight text-blue-800 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    class="h-12 w-24 rounded-lg border border-blue-200 bg-blue-50 px-3 text-base font-semibold tracking-tight text-blue-800 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </label>
               </div>
