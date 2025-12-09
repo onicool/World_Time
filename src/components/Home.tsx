@@ -23,6 +23,11 @@ type HomeProps = {
   rows: TimeRow[];
 };
 
+type PercentageSegment = {
+  start: number;
+  end: number;
+};
+
 // 時刻（HH:mm）から時間の数値（0-24）を取得
 function timeToHours(time: string): number {
   const [hours, minutes] = time.split(':').map(Number);
@@ -33,6 +38,27 @@ function timeToHours(time: string): number {
 function timeToMinutes(time: string): number {
   const [hours, minutes] = time.split(':').map(Number);
   return hours * 60 + minutes;
+}
+
+function buildNonSelectedSegments(segments: PercentageSegment[]): PercentageSegment[] {
+  const sorted = [...segments].sort((a, b) => a.start - b.start);
+  const result: PercentageSegment[] = [];
+
+  let cursor = 0;
+
+  for (const segment of sorted) {
+    if (segment.start > cursor) {
+      result.push({ start: cursor, end: segment.start });
+    }
+
+    cursor = Math.max(cursor, segment.end);
+  }
+
+  if (cursor < 100) {
+    result.push({ start: cursor, end: 100 });
+  }
+
+  return result;
 }
 
 export const Home: FC<HomeProps> = ({
@@ -337,17 +363,19 @@ export const Home: FC<HomeProps> = ({
                   const rowEndMinutes = timeToMinutes(row.localEndTime);
                   const isOverMidnight = rowStartMinutes > rowEndMinutes;
 
-                  // 1 本目（開始〜24:00 または 開始〜終了）
-                  const firstLeftPercent = (rowStartMinutes / 1440) * 100;
-                  const firstWidthPercent = isOverMidnight
-                    ? ((1440 - rowStartMinutes) / 1440) * 100
-                    : ((rowEndMinutes - rowStartMinutes) / 1440) * 100;
+                  const rowStartPercent = (rowStartMinutes / 1440) * 100;
+                  const rowEndPercent = (rowEndMinutes / 1440) * 100;
 
-                  // 2 本目（0:00〜終了）…日またぎのときだけ幅を持つ
-                  const secondLeftPercent = 0;
-                  const secondWidthPercent = isOverMidnight
-                    ? (rowEndMinutes / 1440) * 100
-                    : 0;
+                  const selectedSegments: PercentageSegment[] = isOverMidnight
+                    ? [
+                        { start: rowStartPercent, end: 100 },
+                        { start: 0, end: rowEndPercent },
+                      ]
+                    : [{ start: rowStartPercent, end: rowEndPercent }];
+
+                  const nonSelectedSegments = buildNonSelectedSegments(
+                    selectedSegments,
+                  );
 
                   return (
                     <div class="relative" style="height: 45px;">
@@ -357,56 +385,51 @@ export const Home: FC<HomeProps> = ({
                         style={{
                           top: '0',
                           height: '32px',
-                          background:
-                            'linear-gradient(to right,\
-                              #3b5998 0%,\
-                              #4a6ba8 12.5%,\
-                              #5a7db8 25%,\
-                              #a8c8e0 37.5%,\
-                              #e8f0f8 50%,\
-                              #f0d8b8 62.5%,\
-                              #d8b090 75%,\
-                              #8090a0 87.5%,\
-                              #3b5998 100%\
-                            )',
                         }}
                       >
+                        {/* グラデーションレイヤー */}
+                        <div
+                          class="absolute inset-0"
+                          style={{
+                            background:
+                              'linear-gradient(to right,\
+                                #3b5998 0%,\
+                                #4a6ba8 12.5%,\
+                                #5a7db8 25%,\
+                                #a8c8e0 37.5%,\
+                                #e8f0f8 50%,\
+                                #f0d8b8 62.5%,\
+                                #d8b090 75%,\
+                                #8090a0 87.5%,\
+                                #3b5998 100%\
+                              )',
+                          }}
+                        />
+
+                        {/* 非選択範囲を白で覆う */}
+                        {nonSelectedSegments.map((segment, index) => (
+                          <div
+                            key={index}
+                            class="absolute bg-white"
+                            style={{
+                              top: '0',
+                              height: '32px',
+                              left: `${segment.start}%`,
+                              width: `${segment.end - segment.start}%`,
+                              zIndex: 2,
+                            }}
+                          />
+                        ))}
+
                         {/* グリッド線（3時間刻み） */}
                         {[0, 3, 6, 9, 12, 15, 18, 21].map((hour) => (
                           <div
                             key={hour}
                             class="absolute top-0 bottom-0 w-px bg-gray-300"
-                            style={{ left: `${(hour / 24) * 100}%` }}
+                            style={{ left: `${(hour / 24) * 100}%`, zIndex: 3 }}
                           />
                         ))}
                       </div>
-
-                      {/* 範囲ハイライト 1 本目 */}
-                      <div
-                        class="absolute rounded-l"
-                        style={{
-                          top: '0',
-                          height: '32px',
-                          left: `${firstLeftPercent}%`,
-                          width: `${firstWidthPercent}%`,
-                          // 半透明マスクとして塗る（下のグラデーションが透ける）
-                          background: 'rgba(255, 255, 255, 0.35)',
-                        }}
-                      />
-
-                      {/* 範囲ハイライト 2 本目（日またぎ時のみ有効） */}
-                      {secondWidthPercent > 0 && (
-                        <div
-                          class="absolute rounded-r"
-                          style={{
-                            top: '0',
-                            height: '32px',
-                            left: `${secondLeftPercent}%`,
-                            width: `${secondWidthPercent}%`,
-                            background: 'rgba(255, 255, 255, 0.35)',
-                          }}
-                        />
-                      )}
                     </div>
                   );
                 })()}
