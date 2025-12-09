@@ -287,7 +287,7 @@ export const Home: FC<HomeProps> = ({
       {/* 結果表示 */}
       <section class="rounded-xl bg-white p-4 shadow-sm">
         <h2 class="mb-4 text-base font-semibold text-gray-800">
-          変換結果
+          各地の時刻
         </h2>
         <div id="resultsContainer" class="space-y-4">
           {rows.map((row) => {
