@@ -559,9 +559,10 @@ export const Home: FC<HomeProps> = ({
                   endTimeEl: row.querySelector('.row-end-time'),
                   dateEl: row.querySelector('.row-date'),
                   dayDiffEl: row.querySelector('.row-day-diff'),
-                  startOffset:
-                    baseStart + baseDayDiff * 1440 - baseStartReference,
-                  endOffset: baseEnd + endDayDiff * 1440 - baseEndReference,
+                  startOffset: baseStart - baseStartReference,
+                  endOffset:
+                    baseEnd - baseEndReference +
+                    (endDayDiff - baseDayDiff) * 1440,
                   baseDayDiff,
                   baseLocalDate,
                 };
