@@ -114,7 +114,21 @@ export const Home: FC<HomeProps> = ({
                 <span id="endTimeDisplay" class="font-mono text-blue-600">{baseEndTime}</span>
               </div>
             </div>
-            
+
+            {/* クエリ送信用の隠しフィールド */}
+            <input
+              type="hidden"
+              id="startTimeInput"
+              name="time"
+              value={baseTime}
+            />
+            <input
+              type="hidden"
+              id="endTimeInput"
+              name="endTime"
+              value={baseEndTime}
+            />
+
             {/* カスタムスライダーコンテナ */}
             <div
               id="rangeSliderContainer"
