@@ -7,7 +7,7 @@ type LayoutProps = {
 };
 
 export const Layout: FC<LayoutProps> = ({ title, children }) => {
-  const pageTitle = title ?? '時差変換ツール';
+  const pageTitle = title ?? '世界時計';
 
   return (
     <html lang="ja">
@@ -20,7 +20,7 @@ export const Layout: FC<LayoutProps> = ({ title, children }) => {
         />
         <meta
           name="description"
-          content="海外とのミーティング時間調整に便利な時差変換ツールです。"
+          content="海外とのミーティング時間調整に便利なタイムゾーン変換ツールです。"
         />
         {/* Tailwind CDN */}
         <link
@@ -32,7 +32,7 @@ export const Layout: FC<LayoutProps> = ({ title, children }) => {
         <header className="border-b bg-white">
           <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
             <div className="text-lg font-semibold tracking-tight">
-              時差変換ツール
+              世界時計
             </div>
             <div className="text-xs text-gray-500">
               Powered by Hono + Cloudflare Workers

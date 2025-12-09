@@ -136,7 +136,7 @@ app.get('/', (c) => {
   );
 
   // title を context にセット
-  c.set('title', '時差変換ツール');
+  c.set('title', '世界時計');
 
   return c.render(
     <Home
