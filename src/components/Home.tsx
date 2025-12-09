@@ -981,12 +981,18 @@ export const Home: FC<HomeProps> = ({
               if (!additionalTimezoneSelect) return;
 
               additionalTimezoneSelect.onchange = async function (e) {
-                const target = e.target as HTMLSelectElement | null;
-                if (!target || !target.value) return;
+                const target = e.target;
+                if (
+                  !target ||
+                  !(target instanceof HTMLSelectElement) ||
+                  !target.value
+                ) {
+                  return;
+                }
 
                 const value = target.value;
                 const selector = '.timezone-checkbox[value="' + value + '"]';
-                let checkbox = document.querySelector(selector) as HTMLInputElement | null;
+                let checkbox = document.querySelector(selector);
 
                 if (!checkbox && timezoneContainer) {
                   const selectedOption =
@@ -1026,8 +1032,10 @@ export const Home: FC<HomeProps> = ({
                   checkbox = input;
                 }
 
-                if (checkbox && !checkbox.checked) {
-                  checkbox.checked = true;
+                if (checkbox instanceof HTMLInputElement) {
+                  if (!checkbox.checked) {
+                    checkbox.checked = true;
+                  }
                 }
 
                 // 選択をクリア
@@ -1092,7 +1100,7 @@ export const Home: FC<HomeProps> = ({
                   newAdditionalSelect,
                   currentAdditionalSelect
                 );
-                additionalTimezoneSelect = newAdditionalSelect as HTMLSelectElement;
+                additionalTimezoneSelect = newAdditionalSelect;
               }
 
               timezoneCheckboxes = Array.from(
