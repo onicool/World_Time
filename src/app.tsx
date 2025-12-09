@@ -130,6 +130,11 @@ app.get('/', (c) => {
       return a.zoneId.localeCompare(b.zoneId);
     });
 
+  const sortedTimeZones = sortTimeZones(timeZones);
+  const availableTimeZones = sortedTimeZones.filter(
+    (tz) => !uniqueZoneIds.includes(tz.id)
+  );
+
   // title を context にセット
   c.set('title', '国際時間変換ツール');
 
@@ -139,7 +144,8 @@ app.get('/', (c) => {
       baseTime={baseTime}
       baseEndTime={baseEndTime}
       baseZoneId={baseZoneId}
-      allTimeZones={timeZones}
+      allTimeZones={sortedTimeZones}
+      availableTimeZones={availableTimeZones}
       selectedZoneIds={selectedZoneIds}
       rows={rows}
     />
@@ -167,6 +173,10 @@ function suggestZoneIdsFromQuery(query: string, all: TimeZoneDef[]): string[] {
     .map((tz) => tz.id);
 
   return Array.from(new Set(matchedIds));
+}
+
+function sortTimeZones(zones: TimeZoneDef[]): TimeZoneDef[] {
+  return [...zones].sort((a, b) => a.label.localeCompare(b.label, 'ja'));
 }
 
 export default app;
