@@ -1,7 +1,7 @@
 // src/app.tsx
 import { Hono } from 'hono';
 import { jsxRenderer } from 'hono/jsx-renderer';
-import { Layout } from './components/Layout';
+import { Layout, type LayoutMeta } from './components/Layout';
 import { Home, type TimeRow } from './components/Home';
 import {
   timeZones,
@@ -14,6 +14,7 @@ import { toZonedTime, fromZonedTime } from 'date-fns-tz';
 // Hono の Context に title を追加
 type Variables = {
   title: string;
+  meta?: LayoutMeta;
 };
 
 const app = new Hono<{ Variables: Variables }>();
@@ -23,16 +24,59 @@ app.use(
   '*',
   jsxRenderer(({ children }, c) => {
     const title = c.get('title') || 'タイトル未設定';
-    return <Layout title={title}>{children}</Layout>;
+    const meta = c.get('meta');
+    return (
+      <Layout title={title} meta={meta}>
+        {children}
+      </Layout>
+    );
   })
 );
 
 // ヘルスチェック
 app.get('/health', (c) => c.text('OK'));
 
+// robots.txt でクロール許可とサイトマップの場所を伝える
+app.get('/robots.txt', (c) => {
+  const requestUrl = new URL(c.req.url);
+  const sitemapUrl = `${requestUrl.origin}/sitemap.xml`;
+
+  const body = `User-agent: *\nAllow: /\nSitemap: ${sitemapUrl}\n`;
+
+  return c.text(body, {
+    headers: {
+      'Content-Type': 'text/plain; charset=utf-8',
+    },
+  });
+});
+
+// 単一ページ構成のサイトマップ
+app.get('/sitemap.xml', (c) => {
+  const requestUrl = new URL(c.req.url);
+  const homepage = `${requestUrl.origin}/`;
+  const lastmod = new Date().toISOString();
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>\n` +
+    `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
+    `  <url>\n` +
+    `    <loc>${homepage}</loc>\n` +
+    `    <lastmod>${lastmod}</lastmod>\n` +
+    `    <changefreq>hourly</changefreq>\n` +
+    `    <priority>1.0</priority>\n` +
+    `  </url>\n` +
+    `</urlset>`;
+
+  return c.text(xml, {
+    headers: {
+      'Content-Type': 'application/xml',
+    },
+  });
+});
+
 // メインページ
 app.get('/', (c) => {
   const requestUrl = new URL(c.req.url);
+  const canonicalUrl = `${requestUrl.origin}/`;
 
   // クエリから取得（なければ現在日時を基準にデフォルト値）
   const now = new Date();
@@ -135,7 +179,61 @@ app.get('/', (c) => {
   );
 
   // title を context にセット
-  c.set('title', '国際時間変換ツール');
+  c.set('title', 'World Time Planner | 国際時間変換ツール');
+
+  const structuredData = JSON.stringify(
+    [
+      {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: 'World Time Planner',
+        url: canonicalUrl,
+        description:
+          '海外との打ち合わせ時間をドラッグ操作で直感的に調整できる国際時間変換ツール。主要都市の営業時間も合わせて確認できます。',
+        potentialAction: {
+          '@type': 'SearchAction',
+          target: `${requestUrl.origin}/?q={search_term_string}`,
+          'query-input': 'required name=search_term_string',
+        },
+      },
+      {
+        '@context': 'https://schema.org',
+        '@type': 'SoftwareApplication',
+        name: 'World Time Planner',
+        applicationCategory: 'ProductivityApplication',
+        operatingSystem: 'Web',
+        offers: { '@type': 'Offer', price: '0', priceCurrency: 'JPY' },
+        featureList: [
+          '主要都市の勤務時間帯をハイライト表示',
+          'ドラッグで時間帯をまとめて調整',
+          'クエリパラメータでタイムゾーン検索',
+        ],
+        url: canonicalUrl,
+      },
+    ],
+    null,
+    0
+  );
+
+  const meta: LayoutMeta = {
+    description:
+      '海外との打ち合わせ時間をドラッグ操作で直感的に調整できる国際時間変換ツール。主要都市の営業時間も合わせて確認できます。',
+    canonicalUrl,
+    keywords: [
+      '国際ミーティング',
+      'タイムゾーン比較',
+      '海外拠点',
+      '時差調整',
+      '会議時間提案',
+      'World Time Planner',
+    ],
+    siteName: 'World Time Planner',
+    imageUrl:
+      'https://dummyimage.com/1200x630/0f172a/ffffff&text=World+Time+Planner',
+    structuredData,
+  };
+
+  c.set('meta', meta);
 
   return c.render(
     <Home
