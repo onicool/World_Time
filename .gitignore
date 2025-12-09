@@ -31,3 +31,18 @@ lerna-debug.log*
 
 # misc
 .DS_Store
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.screenshot
+
+# build artifacts
+.next/
+out/
+build/
+
+# IDE temp files
+*.swp
+*.swo
+*~
