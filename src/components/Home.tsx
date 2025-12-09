@@ -80,21 +80,9 @@ export const Home: FC<HomeProps> = ({
     <div class="space-y-6">
       {/* 基準時間指定パネル */}
       <section class="rounded-2xl bg-white p-6 shadow-sm">
-        <h2 class="mb-6 text-lg font-semibold text-gray-800">基準時間指定</h2>
+        <h2 class="mb-6 text-lg font-semibold text-gray-800">基準日時</h2>
         <form method="get" class="space-y-6" id="timeForm">
           <div class="grid gap-4 lg:grid-cols-3">
-            {/* 基準日 */}
-            <div class="lg:col-span-1">
-              <label class="mb-2 block text-sm font-medium text-gray-700">基準日</label>
-              <input
-                type="date"
-                name="date"
-                id="dateInput"
-                value={baseDate}
-                class="w-full rounded-lg border border-gray-300 px-3 py-3 text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
-            </div>
-
             {/* 基準タイムゾーン */}
             <div class="lg:col-span-1">
               <label class="mb-2 block text-sm font-medium text-gray-700">基準タイムゾーン</label>
@@ -112,28 +100,21 @@ export const Home: FC<HomeProps> = ({
               </select>
             </div>
 
+            {/* 基準日 */}
+            <div class="lg:col-span-1">
+              <label class="mb-2 block text-sm font-medium text-gray-700">基準日</label>
+              <input
+                type="date"
+                name="date"
+                id="dateInput"
+                value={baseDate}
+                class="w-full rounded-lg border border-gray-300 px-3 py-3 text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+
             {/* 時刻入力 */}
             <div class="lg:col-span-1">
-              <div class="flex items-center justify-between mb-2">
-                <label class="block text-sm font-medium text-gray-700">時刻範囲</label>
-                <div class="flex items-center gap-2 text-base font-semibold">
-                  <button
-                    type="button"
-                    id="startTimeDisplay"
-                    class="rounded-lg bg-blue-50 px-3 py-1 font-mono text-blue-700 shadow-inner focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    {baseTime}
-                  </button>
-                  <span class="text-gray-400">〜</span>
-                  <button
-                    type="button"
-                    id="endTimeDisplay"
-                    class="rounded-lg bg-blue-50 px-3 py-1 font-mono text-blue-700 shadow-inner focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    {baseEndTime}
-                  </button>
-                </div>
-              </div>
+              <label class="mb-2 block text-sm font-medium text-gray-700">時刻範囲</label>
               <div class="grid grid-cols-2 gap-3">
                 <label class="flex flex-col gap-1 text-xs font-medium text-gray-600">
                   <span>開始</span>
@@ -167,15 +148,8 @@ export const Home: FC<HomeProps> = ({
 
           {/* 時刻範囲スライダー */}
           <div>
-            <div class="mb-3 flex items-center justify-between">
-              <div class="flex items-center gap-2 text-sm text-gray-700">
-                <span>スライダーで範囲を調整（5分単位）</span>
-              </div>
-              <div class="hidden text-lg font-semibold sm:block">
-                <span id="startTimeSummary" class="font-mono text-blue-600">{baseTime}</span>
-                <span class="mx-2 text-gray-400">〜</span>
-                <span id="endTimeSummary" class="font-mono text-blue-600">{baseEndTime}</span>
-              </div>
+            <div class="mb-3 flex items-center gap-2 text-sm text-gray-700">
+              <span>スライダーで範囲を調整（1分単位）</span>
             </div>
 
             {/* カスタムスライダーコンテナ */}
@@ -279,17 +253,8 @@ export const Home: FC<HomeProps> = ({
 
       {/* 比較したいタイムゾーンパネル */}
       <section class="rounded-xl bg-white p-4 shadow-sm">
-        <div class="mb-4 flex items-center justify-between">
-          <h2 class="text-base font-semibold text-gray-800">比較したいタイムゾーン</h2>
-          <button
-            id="addTimezoneBtn"
-            type="button"
-            class="text-sm text-blue-600 hover:text-blue-700 font-medium"
-          >
-            + 他のタイムゾーンを追加
-          </button>
-        </div>
-        
+        <h2 class="mb-4 text-base font-semibold text-gray-800">比較したいタイムゾーン</h2>
+
         {/* 選択中のタイムゾーン一覧（チェックボックス） */}
         <div id="timezoneCheckboxes" class="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 mb-4">
           {allTimeZones.map((tz) => {
@@ -314,8 +279,8 @@ export const Home: FC<HomeProps> = ({
           })}
         </div>
 
-        {/* 追加タイムゾーン選択ドロップダウン（初期は非表示） */}
-        <div id="addTimezonePanel" class="hidden mb-4 p-3 bg-gray-50 rounded-md border border-gray-200">
+        {/* 追加タイムゾーン選択ドロップダウン */}
+        <div class="mb-4 p-3 bg-gray-50 rounded-md border border-gray-200">
           <label class="mb-2 block text-sm font-medium text-gray-700">
             タイムゾーンを選択
           </label>
@@ -382,82 +347,164 @@ export const Home: FC<HomeProps> = ({
                   </div>
                 </div>
 
-                {/* タイムゾーンごとのスライダー（表示のみ） */}
-                {(() => {
-                  const rowStartMinutes = timeToMinutes(row.localTime);
-                  const rowEndMinutes = timeToMinutes(row.localEndTime);
-                  const isOverMidnight = rowStartMinutes > rowEndMinutes;
-
-                  const rowStartPercent = (rowStartMinutes / 1440) * 100;
-                  const rowEndPercent = (rowEndMinutes / 1440) * 100;
-
-                  const selectedSegments: PercentageSegment[] = isOverMidnight
-                    ? [
-                        { start: rowStartPercent, end: 100 },
-                        { start: 0, end: rowEndPercent },
-                      ]
-                    : [{ start: rowStartPercent, end: rowEndPercent }];
-
-                  const nonSelectedSegments = buildNonSelectedSegments(
-                    selectedSegments,
-                  );
-
-                  return (
-                    <div class="relative" style="height: 45px;">
-                      {/* ベースバー（グラデーション固定） */}
+                {/* タイムゾーンごとのスライダー */}
+                {row.isBase ? (
+                  <div
+                    id="baseResultSliderContainer"
+                    class="relative select-none"
+                    style="height: 60px; padding: 6px 0;"
+                  >
+                    <div
+                      class="absolute left-0 right-0 rounded border border-gray-300 overflow-hidden"
+                      style={{
+                        top: '8px',
+                        height: '32px',
+                      }}
+                    >
                       <div
-                        class="absolute left-0 right-0 rounded border border-gray-300 overflow-hidden"
+                        class="absolute inset-0"
                         style={{
-                          top: '0',
-                          height: '32px',
+                          background:
+                            'linear-gradient(to right,\
+                              #3b5998 0%,\
+                              #4a6ba8 12.5%,\
+                              #5a7db8 25%,\
+                              #a8c8e0 37.5%,\
+                              #e8f0f8 50%,\
+                              #f0d8b8 62.5%,\
+                              #d8b090 75%,\
+                              #8090a0 87.5%,\
+                              #3b5998 100%\
+                            )',
                         }}
-                      >
-                        {/* グラデーションレイヤー */}
-                        <div
-                          class="absolute inset-0"
-                          style={{
-                            background:
-                              'linear-gradient(to right,\
-                                #3b5998 0%,\
-                                #4a6ba8 12.5%,\
-                                #5a7db8 25%,\
-                                #a8c8e0 37.5%,\
-                                #e8f0f8 50%,\
-                                #f0d8b8 62.5%,\
-                                #d8b090 75%,\
-                                #8090a0 87.5%,\
-                                #3b5998 100%\
-                              )',
-                          }}
-                        />
+                      />
 
-                        {/* 非選択範囲を白で覆う */}
-                        {nonSelectedSegments.map((segment, index) => (
+                      <div
+                        id="resultWhiteMask"
+                        class="absolute inset-0 bg-white pointer-events-none"
+                      />
+
+                      {[0, 3, 6, 9, 12, 15, 18, 21].map((hour) => (
+                        <div
+                          key={hour}
+                          class="absolute top-0 bottom-0 w-px bg-gray-300"
+                          style={{ left: `${(hour / 24) * 100}%` }}
+                        />
+                      ))}
+                    </div>
+
+                    <div
+                      id="baseResultRangeHighlight"
+                      class="absolute"
+                      style={{
+                        top: '8px',
+                        height: '32px',
+                        left: `${(startMinutes / 1440) * 100}%`,
+                        width: `${((endMinutes - startMinutes) / 1440) * 100}%`,
+                        cursor: 'grab',
+                      }}
+                    />
+
+                    <div
+                      id="baseResultStartThumb"
+                      class="absolute bg-white border border-blue-500 shadow rounded-md"
+                      style={{
+                        top: '8px',
+                        height: '32px',
+                        width: '10px',
+                        left: `${(startMinutes / 1440) * 100}%`,
+                        transform: 'translate(-50%, 0)',
+                      }}
+                    />
+                    <div
+                      id="baseResultEndThumb"
+                      class="absolute bg-white border border-blue-500 shadow rounded-md"
+                      style={{
+                        top: '8px',
+                        height: '32px',
+                        width: '10px',
+                        left: `${(endMinutes / 1440) * 100}%`,
+                        transform: 'translate(-50%, 0)',
+                      }}
+                    />
+                  </div>
+                ) : (
+                  (() => {
+                    const rowStartMinutes = timeToMinutes(row.localTime);
+                    const rowEndMinutes = timeToMinutes(row.localEndTime);
+                    const isOverMidnight = rowStartMinutes > rowEndMinutes;
+
+                    const rowStartPercent = (rowStartMinutes / 1440) * 100;
+                    const rowEndPercent = (rowEndMinutes / 1440) * 100;
+
+                    const selectedSegments: PercentageSegment[] = isOverMidnight
+                      ? [
+                          { start: rowStartPercent, end: 100 },
+                          { start: 0, end: rowEndPercent },
+                        ]
+                      : [{ start: rowStartPercent, end: rowEndPercent }];
+
+                    const nonSelectedSegments = buildNonSelectedSegments(
+                      selectedSegments,
+                    );
+
+                    return (
+                      <div class="relative" style="height: 45px;">
+                        {/* ベースバー（グラデーション固定） */}
+                        <div
+                          class="absolute left-0 right-0 rounded border border-gray-300 overflow-hidden"
+                          style={{
+                            top: '0',
+                            height: '32px',
+                          }}
+                        >
+                          {/* グラデーションレイヤー */}
                           <div
-                            key={index}
-                            class="absolute bg-white"
+                            class="absolute inset-0"
                             style={{
-                              top: '0',
-                              height: '32px',
-                              left: `${segment.start}%`,
-                              width: `${segment.end - segment.start}%`,
-                              zIndex: 2,
+                              background:
+                                'linear-gradient(to right,\
+                                  #3b5998 0%,\
+                                  #4a6ba8 12.5%,\
+                                  #5a7db8 25%,\
+                                  #a8c8e0 37.5%,\
+                                  #e8f0f8 50%,\
+                                  #f0d8b8 62.5%,\
+                                  #d8b090 75%,\
+                                  #8090a0 87.5%,\
+                                  #3b5998 100%\
+                                )',
                             }}
                           />
-                        ))}
 
-                        {/* グリッド線（3時間刻み） */}
-                        {[0, 3, 6, 9, 12, 15, 18, 21].map((hour) => (
-                          <div
-                            key={hour}
-                            class="absolute top-0 bottom-0 w-px bg-gray-300"
-                            style={{ left: `${(hour / 24) * 100}%`, zIndex: 3 }}
-                          />
-                        ))}
+                          {/* 非選択範囲を白で覆う */}
+                          {nonSelectedSegments.map((segment, index) => (
+                            <div
+                              key={index}
+                              class="absolute bg-white"
+                              style={{
+                                top: '0',
+                                height: '32px',
+                                left: `${segment.start}%`,
+                                width: `${segment.end - segment.start}%`,
+                                zIndex: 2,
+                              }}
+                            />
+                          ))}
+
+                          {/* グリッド線（3時間刻み） */}
+                          {[0, 3, 6, 9, 12, 15, 18, 21].map((hour) => (
+                            <div
+                              key={hour}
+                              class="absolute top-0 bottom-0 w-px bg-gray-300"
+                              style={{ left: `${(hour / 24) * 100}%`, zIndex: 3 }}
+                            />
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })()}
+                    );
+                  })()
+                )}
 
 
                 {/* 時刻ラベル */}
@@ -483,12 +530,6 @@ export const Home: FC<HomeProps> = ({
             const rangeHighlight = document.getElementById('rangeHighlight');
             const startTimeInput = document.getElementById('startTimeInput');
             const endTimeInput = document.getElementById('endTimeInput');
-            const startTimeDisplay = document.getElementById('startTimeDisplay');
-            const endTimeDisplay = document.getElementById('endTimeDisplay');
-            const startTimeSummary = document.getElementById('startTimeSummary');
-            const endTimeSummary = document.getElementById('endTimeSummary');
-            const addTimezoneBtn = document.getElementById('addTimezoneBtn');
-            const addTimezonePanel = document.getElementById('addTimezonePanel');
             const additionalTimezoneSelect = document.getElementById('additionalTimezoneSelect');
             const timezoneCheckboxes = document.querySelectorAll('.timezone-checkbox');
             const dateInput = document.getElementById('dateInput');
@@ -506,19 +547,24 @@ export const Home: FC<HomeProps> = ({
               });
             }
 
+            const sliderInstances = [];
+
+            if (container && startThumb && endThumb && rangeHighlight) {
+              sliderInstances.push({
+                id: 'primary',
+                container,
+                startThumb,
+                endThumb,
+                rangeHighlight,
+                mask: whiteMask,
+              });
+            }
+
+            const essentialElementsPresent =
+              form && startTimeInput && endTimeInput && sliderInstances.length > 0;
+
             // 必要な要素がなければ何もしない
-            if (
-              !container ||
-              !startThumb ||
-              !endThumb ||
-              !rangeHighlight ||
-              !startTimeInput ||
-              !endTimeInput ||
-              !startTimeDisplay ||
-              !endTimeDisplay ||
-              !form ||
-              !whiteMask
-            ) {
+            if (!essentialElementsPresent) {
               return;
             }
 
@@ -529,6 +575,7 @@ export const Home: FC<HomeProps> = ({
             let isDragging = false;
             // 'start' | 'end' | 'range'
             let dragMode = null;
+            let activeSlider = null;
             let rangeDragStartX = 0;
             let rangeStartMinutesAtDragStart = 0;
             let rangeEndMinutesAtDragStart = 0;
@@ -540,7 +587,8 @@ export const Home: FC<HomeProps> = ({
             }
 
             // 白いマスクに「選択範囲だけ穴を開ける」ための mask-image を設定
-            function updateWhiteMask(startPercent, endPercent) {
+            function updateWhiteMask(maskElement, startPercent, endPercent) {
+              if (!maskElement) return;
               // startPercent, endPercent は 0〜100 の範囲
               // 未選択部分（0〜start, end〜100）は黒＝白が見える
               // 選択部分（start〜end）は透明＝穴が開いて下のグラデーションが見える
@@ -553,8 +601,8 @@ export const Home: FC<HomeProps> = ({
                 'black ' + endPercent + '%,' +
                 'black 100%)';
 
-              whiteMask.style.webkitMaskImage = mask;
-              whiteMask.style.maskImage = mask;
+              maskElement.style.webkitMaskImage = mask;
+              maskElement.style.maskImage = mask;
             }
 
             function updateDisplay() {
@@ -568,28 +616,34 @@ export const Home: FC<HomeProps> = ({
               const startPercent = (startMinutes / 1440) * 100;
               const endPercent = (endMinutes / 1440) * 100;
 
-              // つまみとドラッグ領域の位置・幅を更新
-              startThumb.style.left = startPercent + '%';
-              endThumb.style.left = endPercent + '%';
-              rangeHighlight.style.left = startPercent + '%';
-              rangeHighlight.style.width = (endPercent - startPercent) + '%';
+              sliderInstances.forEach(function(slider) {
+                // つまみとドラッグ領域の位置・幅を更新
+                slider.startThumb.style.left = startPercent + '%';
+                slider.endThumb.style.left = endPercent + '%';
+                slider.rangeHighlight.style.left = startPercent + '%';
+                slider.rangeHighlight.style.width = (endPercent - startPercent) + '%';
 
-              // 白マスクに「穴」を開ける
-              updateWhiteMask(startPercent, endPercent);
+                // 白マスクに「穴」を開ける
+                updateWhiteMask(slider.mask, startPercent, endPercent);
+              });
 
               const startTime = minutesToTime(startMinutes);
               const endTime = minutesToTime(endMinutes);
 
               startTimeInput.value = startTime;
               endTimeInput.value = endTime;
-              startTimeDisplay.textContent = startTime;
-              endTimeDisplay.textContent = endTime;
-              if (startTimeSummary) startTimeSummary.textContent = startTime;
-              if (endTimeSummary) endTimeSummary.textContent = endTime;
             }
 
             async function autoSubmit() {
               const formData = new FormData(form);
+
+              if (timezoneCheckboxes && timezoneCheckboxes.forEach) {
+                timezoneCheckboxes.forEach(function (cb) {
+                  if (cb.checked) {
+                    formData.append(cb.name || 'zones', cb.value);
+                  }
+                });
+              }
 
               const params = new URLSearchParams(formData);
               const newQuery = params.toString();
@@ -621,6 +675,8 @@ export const Home: FC<HomeProps> = ({
 
                 if (newResults && currentResults && currentResults.parentNode) {
                   currentResults.parentNode.replaceChild(newResults, currentResults);
+                  refreshBaseSlider();
+                  updateDisplay();
                 }
 
                 history.replaceState(null, '', url);
@@ -629,8 +685,8 @@ export const Home: FC<HomeProps> = ({
               }
             }
 
-            function getMinutesFromEvent(e) {
-              const rect = container.getBoundingClientRect();
+            function getMinutesFromEvent(slider, e) {
+              const rect = slider.container.getBoundingClientRect();
               const clientX =
                 e.clientX ||
                 (e.touches && e.touches[0] && e.touches[0].clientX);
@@ -638,22 +694,23 @@ export const Home: FC<HomeProps> = ({
 
               const x = clientX - rect.left;
               const percent = Math.max(0, Math.min(1, x / rect.width));
-              // 5分単位に丸める
-              const minutes = Math.round((percent * 1440) / 5) * 5;
+              // 1分単位に丸める
+              const minutes = Math.round(percent * 1440);
               return Math.max(0, Math.min(MAX_MINUTES, minutes));
             }
 
-            function handleStart(e, mode) {
+            function handleStart(e, mode, slider) {
               isDragging = true;
               dragMode = mode; // 'start' | 'end'
+              activeSlider = slider;
               e.preventDefault();
             }
 
             function handleMove(e) {
-              if (!isDragging || !dragMode) return;
+              if (!isDragging || !dragMode || !activeSlider) return;
 
               if (dragMode === 'start' || dragMode === 'end') {
-                const minutes = getMinutesFromEvent(e);
+                const minutes = getMinutesFromEvent(activeSlider, e);
 
                 if (dragMode === 'start') {
                   startMinutes = minutes;
@@ -667,7 +724,7 @@ export const Home: FC<HomeProps> = ({
               }
 
               if (dragMode === 'range') {
-                const rect = container.getBoundingClientRect();
+                const rect = activeSlider.container.getBoundingClientRect();
                 const clientX =
                   e.clientX ||
                   (e.touches && e.touches[0] && e.touches[0].clientX);
@@ -677,8 +734,8 @@ export const Home: FC<HomeProps> = ({
 
                 // スライダー全幅 = 1440分に対応
                 let deltaMinutes = (dx / rect.width) * 1440;
-                // 5分単位に丸める
-                deltaMinutes = Math.round(deltaMinutes / 5) * 5;
+                // 1分単位に丸める
+                deltaMinutes = Math.round(deltaMinutes);
 
                 const originalRange =
                   rangeEndMinutesAtDragStart - rangeStartMinutesAtDragStart;
@@ -708,69 +765,105 @@ export const Home: FC<HomeProps> = ({
               if (!isDragging) return;
               isDragging = false;
               dragMode = null;
+              activeSlider = null;
 
               // ドラッグ終了時に自動送信
               autoSubmit();
             }
 
-            // --- スライダー: つまみドラッグ ---
+            function startRangeDrag(slider, clientX) {
+              if (clientX == null) return;
+              isDragging = true;
+              dragMode = 'range';
+              activeSlider = slider;
+              rangeDragStartX = clientX;
+              rangeStartMinutesAtDragStart = startMinutes;
+              rangeEndMinutesAtDragStart = endMinutes;
+            }
 
-            // マウス
-            startThumb.addEventListener('mousedown', function (e) {
-              handleStart(e, 'start');
-            });
-            endThumb.addEventListener('mousedown', function (e) {
-              handleStart(e, 'end');
-            });
+            function attachSliderEvents(slider) {
+              // --- スライダー: つまみドラッグ ---
+              slider.startThumb.addEventListener('mousedown', function (e) {
+                handleStart(e, 'start', slider);
+              });
+              slider.endThumb.addEventListener('mousedown', function (e) {
+                handleStart(e, 'end', slider);
+              });
+
+              slider.startThumb.addEventListener(
+                'touchstart',
+                function (e) {
+                  handleStart(e, 'start', slider);
+                },
+                { passive: false }
+              );
+              slider.endThumb.addEventListener(
+                'touchstart',
+                function (e) {
+                  handleStart(e, 'end', slider);
+                },
+                { passive: false }
+              );
+
+              // --- スライダー: 範囲（ハイライト）ドラッグ ---
+              slider.rangeHighlight.addEventListener('mousedown', function (e) {
+                startRangeDrag(slider, e.clientX);
+                e.preventDefault();
+              });
+
+              slider.rangeHighlight.addEventListener(
+                'touchstart',
+                function (e) {
+                  if (!e.touches || !e.touches[0]) return;
+                  startRangeDrag(slider, e.touches[0].clientX);
+                  e.preventDefault();
+                },
+                { passive: false }
+              );
+            }
+
+            function refreshBaseSlider() {
+              for (let i = sliderInstances.length - 1; i >= 0; i--) {
+                if (sliderInstances[i].id === 'base') {
+                  sliderInstances.splice(i, 1);
+                }
+              }
+
+              const baseContainer = document.getElementById('baseResultSliderContainer');
+              const baseStartThumb = document.getElementById('baseResultStartThumb');
+              const baseEndThumb = document.getElementById('baseResultEndThumb');
+              const baseRangeHighlight = document.getElementById('baseResultRangeHighlight');
+              const baseMask = document.getElementById('resultWhiteMask');
+
+              if (
+                baseContainer &&
+                baseStartThumb &&
+                baseEndThumb &&
+                baseRangeHighlight
+              ) {
+                const baseSlider = {
+                  id: 'base',
+                  container: baseContainer,
+                  startThumb: baseStartThumb,
+                  endThumb: baseEndThumb,
+                  rangeHighlight: baseRangeHighlight,
+                  mask: baseMask,
+                };
+
+                attachSliderEvents(baseSlider);
+                sliderInstances.push(baseSlider);
+              }
+            }
+
+            sliderInstances.forEach(attachSliderEvents);
+            refreshBaseSlider();
 
             document.addEventListener('mousemove', handleMove);
             document.addEventListener('mouseup', handleEnd);
-
-            // タッチ
-            startThumb.addEventListener(
-              'touchstart',
-              function (e) {
-                handleStart(e, 'start');
-              },
-              { passive: false }
-            );
-            endThumb.addEventListener(
-              'touchstart',
-              function (e) {
-                handleStart(e, 'end');
-              },
-              { passive: false }
-            );
-
             document.addEventListener('touchmove', handleMove, {
               passive: false,
             });
             document.addEventListener('touchend', handleEnd);
-
-            // --- スライダー: 範囲（ハイライト）ドラッグ ---
-
-            rangeHighlight.addEventListener('mousedown', function (e) {
-              isDragging = true;
-              dragMode = 'range';
-              rangeDragStartX = e.clientX;
-              rangeStartMinutesAtDragStart = startMinutes;
-              rangeEndMinutesAtDragStart = endMinutes;
-              e.preventDefault();
-            });
-
-            rangeHighlight.addEventListener(
-              'touchstart',
-              function (e) {
-                if (!e.touches || !e.touches[0]) return;
-                isDragging = true;
-                dragMode = 'range';
-                rangeDragStartX = e.touches[0].clientX;
-                rangeStartMinutesAtDragStart = startMinutes;
-                rangeEndMinutesAtDragStart = endMinutes;
-                e.preventDefault();
-              },
-              { passive: false }
-            );
 
             // --- 時刻入力欄を直接変更したとき ---
 
@@ -805,32 +898,6 @@ export const Home: FC<HomeProps> = ({
                 endTimeInput.value = minutesToTime(endMinutes);
               }
             });
-
-            if (startTimeDisplay) {
-              startTimeDisplay.addEventListener('click', function () {
-                if (startTimeInput && startTimeInput.focus) {
-                  startTimeInput.focus();
-                  if (startTimeInput.select) startTimeInput.select();
-                }
-              });
-            }
-
-            if (endTimeDisplay) {
-              endTimeDisplay.addEventListener('click', function () {
-                if (endTimeInput && endTimeInput.focus) {
-                  endTimeInput.focus();
-                  if (endTimeInput.select) endTimeInput.select();
-                }
-              });
-            }
-
-            // --- タイムゾーン追加ボタンのトグル ---
-
-            if (addTimezoneBtn && addTimezonePanel) {
-              addTimezoneBtn.addEventListener('click', function () {
-                addTimezonePanel.classList.toggle('hidden');
-              });
-            }
 
             // --- タイムゾーン追加セレクト ---
 
