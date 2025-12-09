@@ -34,19 +34,20 @@ app.get('/health', (c) => c.text('OK'));
 app.get('/', (c) => {
   const requestUrl = new URL(c.req.url);
 
-  // クエリから取得（なければ現在日時を基準にデフォルト値）
-  const now = new Date();
-  const defaultDate = format(now, 'yyyy-MM-dd');
-  const defaultTime = format(now, 'HH:mm');
-  
+  const baseZoneId = requestUrl.searchParams.get('baseZone') || defaultBaseZoneId;
+
+  // クエリから取得（なければ基準タイムゾーンの現在日時を基準にデフォルト値）
+  const zonedNow = toZonedTime(new Date(), baseZoneId);
+  const defaultDate = format(zonedNow, 'yyyy-MM-dd');
+  const defaultTime = format(zonedNow, 'HH:mm');
+
   // デフォルトの終了時刻は開始時刻の1時間後
-  const defaultEndDate = addMinutes(now, 1 * 60);
+  const defaultEndDate = addMinutes(zonedNow, 1 * 60);
   const defaultEndTime = format(defaultEndDate, 'HH:mm');
 
   const baseDate = requestUrl.searchParams.get('date') || defaultDate;
   const baseTime = requestUrl.searchParams.get('time') || defaultTime;
   const baseEndTime = requestUrl.searchParams.get('endTime') || defaultEndTime;
-  const baseZoneId = requestUrl.searchParams.get('baseZone') || defaultBaseZoneId;
 
   const searchQuery =
     requestUrl.searchParams.get('q') ||
