@@ -39,8 +39,8 @@ app.get('/', (c) => {
   const defaultDate = format(now, 'yyyy-MM-dd');
   const defaultTime = format(now, 'HH:mm');
   
-  // デフォルトの終了時刻は開始時刻の8時間後
-  const defaultEndDate = addMinutes(now, 8 * 60);
+  // デフォルトの終了時刻は開始時刻の1時間後
+  const defaultEndDate = addMinutes(now, 1 * 60);
   const defaultEndTime = format(defaultEndDate, 'HH:mm');
 
   const baseDate = requestUrl.searchParams.get('date') || defaultDate;
@@ -135,7 +135,7 @@ app.get('/', (c) => {
   );
 
   // title を context にセット
-  c.set('title', '国際時間変換ツール');
+  c.set('title', '時差変換ツール');
 
   return c.render(
     <Home

@@ -67,7 +67,11 @@ export const Home: FC<HomeProps> = ({
                 class="w-full h-12 rounded-lg border border-gray-300 px-3 text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               >
                 {allTimeZones.map((tz) => (
-                  <option key={tz.id} value={tz.id}>
+                  <option
+                    key={tz.id}
+                    value={tz.id}
+                    selected={tz.id === baseZoneId}
+                  >
                     {tz.label}
                   </option>
                 ))}
@@ -100,7 +104,7 @@ export const Home: FC<HomeProps> = ({
                     id="startTimeInput"
                     name="time"
                     value={baseTime}
-                    class="h-12 w-24 rounded-lg border border-blue-200 bg-blue-50 px-3 text-base font-semibold tracking-tight text-blue-800 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    class="h-12 w-28 rounded-lg border border-blue-200 bg-blue-50 px-3 text-base font-semibold tracking-tight text-blue-800 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </label>
                 <span class="text-gray-400">〜</span>
@@ -114,7 +118,7 @@ export const Home: FC<HomeProps> = ({
                     id="endTimeInput"
                     name="endTime"
                     value={baseEndTime}
-                    class="h-12 w-24 rounded-lg border border-blue-200 bg-blue-50 px-3 text-base font-semibold tracking-tight text-blue-800 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    class="h-12 w-28 rounded-lg border border-blue-200 bg-blue-50 px-3 text-base font-semibold tracking-tight text-blue-800 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </label>
               </div>

@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "time_converter",
+  "name": "time-converter",
   "main": "src/index.tsx",
   "compatibility_date": "2025-12-08"
   // "compatibility_flags": [
