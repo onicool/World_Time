@@ -42,7 +42,7 @@ app.get('/', (c) => {
   const defaultTime = format(zonedNow, 'HH:mm');
 
   // デフォルトの終了時刻は開始時刻の1時間後
-  const defaultEndDate = addMinutes(zonedNow, 1 * 60);
+  const defaultEndDate = addMinutes(zonedNow, 3 * 60);
   const defaultEndTime = format(defaultEndDate, 'HH:mm');
 
   const baseDate = requestUrl.searchParams.get('date') || defaultDate;
